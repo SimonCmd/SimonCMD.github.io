@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import Timer from './Timer'
 import TeamInfo from './TeamInfo'
 import TabooCard from './TabooCard'
@@ -19,8 +19,11 @@ const sampleCards = [
 ]
 
 export default function TabooGame() {
-  const [currentTeam, setCurrentTeam] = useState('Team A')
-  const [scores, setScores] = useState({ 'Team A': 0, 'Team B': 0 })
+  const [currentTeam, setCurrentTeam] = useState<string>('Team A')
+
+  // Use a more flexible type for scores
+  const [scores, setScores] = useState<Record<string, number>>({ 'Team A': 0, 'Team B': 0 })
+
   const [passCount, setPassCount] = useState(0)
   const [wrongCount, setWrongCount] = useState(0)
   const [timeLeft, setTimeLeft] = useState(INITIAL_TIME)
@@ -59,41 +62,40 @@ export default function TabooGame() {
   const handleCorrect = useCallback(() => {
     setScores(prevScores => ({
       ...prevScores,
-      [currentTeam]: prevScores[currentTeam] + 1
+      [currentTeam]: (prevScores[currentTeam] || 0) + 1
     }))
     nextCard()
   }, [currentTeam, nextCard])
 
   return (
-    <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
-      <TeamInfo
-        currentTeam={currentTeam}
-        scores={scores}
-        passCount={passCount}
-        wrongCount={wrongCount}
-      />
-      <div className="mt-6 flex justify-center">
-        <Timer
-          timeLeft={timeLeft}
-          setTimeLeft={setTimeLeft}
-          isPlaying={isPlaying}
-          setIsPlaying={setIsPlaying}
-          onTimeUp={handleTimeUp}
+      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <TeamInfo
+            currentTeam={currentTeam}
+            scores={scores}
+            passCount={passCount}
+            wrongCount={wrongCount}
+        />
+        <div className="mt-6 flex justify-center">
+          <Timer
+              timeLeft={timeLeft}
+              setTimeLeft={setTimeLeft}
+              isPlaying={isPlaying}
+              setIsPlaying={setIsPlaying}
+              onTimeUp={handleTimeUp}
+          />
+        </div>
+        <TabooCard card={sampleCards[currentCardIndex]} />
+        <ControlButtons
+            onPass={handlePass}
+            onWrong={handleWrong}
+            onCorrect={handleCorrect}
+            isPlaying={isPlaying}
+        />
+        <SwitchTeamModal
+            show={showSwitchModal}
+            onSwitch={switchTeam}
+            nextTeam={currentTeam === 'Team A' ? 'Team B' : 'Team A'}
         />
       </div>
-      <TabooCard card={sampleCards[currentCardIndex]} />
-      <ControlButtons
-        onPass={handlePass}
-        onWrong={handleWrong}
-        onCorrect={handleCorrect}
-        isPlaying={isPlaying}
-      />
-      <SwitchTeamModal
-        show={showSwitchModal}
-        onSwitch={switchTeam}
-        nextTeam={currentTeam === 'Team A' ? 'Team B' : 'Team A'}
-      />
-    </div>
   )
 }
-
